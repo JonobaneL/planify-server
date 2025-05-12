@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middleware/errorMiddleware";
 import config from "./config/config";
+import testRouter from "./routes/test";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cookieParser());
 app.use(cors());
 
 app.use("/auth", authRouter);
+app.use("/", testRouter);
 
 app.use(errorMiddleware);
 

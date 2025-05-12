@@ -1,61 +1,89 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import jwt from "jsonwebtoken";
-import cookie from "cookie";
-
-const ACCESS_SECRET = process.env.ACCESS_SECRET || "backup-access-secret";
-const REFRESH_SECRET = process.env.REFRESH_SECRET || "backup-refresh-secret";
+import { CustomError } from "../utils/customError";
+import { validationResult } from "express-validator";
+import authService from "../services/authService";
+import {
+  removeRefreshToken,
+  updateAccessToken,
+} from "../services/tokenService";
 
 class AuthController {
-  login: RequestHandler = async (req: Request, res: Response) => {
+  login: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-      const accessToken = jwt.sign({ sub: "user123" }, ACCESS_SECRET, {
-        expiresIn: "15m",
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return next(CustomError.BadRequest("Validation error", errors.array()));
+      }
+      const { email, password } = req.body;
+      const { user, accessToken, refreshToken } = await authService.login(
+        email,
+        password
+      );
+
+      res.cookie("refresh_token", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      const refreshToken = jwt.sign({ sub: "user123" }, REFRESH_SECRET, {
-        expiresIn: "24h",
-      });
-      res.setHeader("Set-Cookie", [
-        cookie.serialize("access_token", accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 15 * 60,
-          path: "/",
-        }),
-        cookie.serialize("refresh_token", refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 24 * 60 * 60,
-          path: "/",
-        }),
-      ]);
-      res.status(200).json({ message: "Logged in" });
+      res.status(200).json({ ...user, accessToken });
     } catch (e) {
-      res.status(500).json({ message: "Server error" });
+      next(e);
     }
   };
 
   signup: RequestHandler = async (req: Request, res: Response) => {
     try {
-      const { username, password } = req.body;
-      // Placeholder for signup logic (e.g., create user in DB)
-      res.status(201).json({ message: "User signed up" });
+      const { user, accessToken, refreshToken } = await authService.signup(
+        req.body
+      );
+      res.cookie("refresh_token", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+      res.status(201).json({ ...user, accessToken });
     } catch (e) {
-      res.status(500).json({ message: "Server error" });
+      res.status(500).json({ message: "Server error", e });
     }
   };
-  logout: RequestHandler = async (req: Request, res: Response) => {
+  logout: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-      res.setHeader("Set-Cookie", []);
-      res.status(201).json({ message: "User logged out" });
+      const refreshToken = req.cookies.refresh_token;
+      if (!refreshToken) {
+        return next(CustomError.BadRequest("Refresh token not provided"));
+      }
+      await removeRefreshToken(refreshToken);
+
+      res.clearCookie("refresh_token");
+
+      res.status(200).json({ message: "User logged out" });
     } catch (e) {
-      res.status(500).json({ message: "Server error" });
+      next(e);
     }
   };
-  refresh: RequestHandler = async (req: Request, res: Response) => {
+  refresh: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-      res.status(201).json({ message: "User signed up" });
+      const refreshToken = req.cookies.refresh_token;
+      if (!refreshToken)
+        return next(CustomError.BadRequest("Refresh token not provided"));
+
+      const { accessToken } = await updateAccessToken(refreshToken);
+
+      res.status(200).json({ accessToken });
     } catch (e) {
       res.status(500).json({ message: "Server error" });
     }

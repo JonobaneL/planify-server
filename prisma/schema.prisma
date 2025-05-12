@@ -14,17 +14,27 @@ datasource db {
 }
 
 model User {
-  id      String   @id @default(cuid())
+  id      String   @id @default(uuid())
   email   String   @unique
   first_name String
   last_name  String
   password String
-  position String
-  username String @unique
-  role String
-  team String //TODO: create a separate team model
-  location String
-  phone String
+  position String?
+  username String 
+  role String?
+  team String? //TODO: create a separate team model
+  location String?
+  phone String?
+  tokens RefreshToken[]
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
+}
+model RefreshToken {
+  id      String   @id @default(uuid())
+  token   String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
 }
