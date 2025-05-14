@@ -3,7 +3,7 @@ import authRouter from "./routes/auth";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middleware/errorMiddleware";
-import config from "./config/config";
+import config from "./config";
 import testRouter from "./routes/test";
 
 const app = express();
@@ -14,7 +14,12 @@ app.get("/", (req, res) => {
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(
+  cors({
+    origin: config.frontendUrl,
+    credentials: true,
+  })
+);
 
 app.use("/auth", authRouter);
 app.use("/", testRouter);

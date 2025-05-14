@@ -30,7 +30,13 @@ class AuthController {
         sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      res.status(200).json({ ...user, accessToken });
+      res.cookie("access_token", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+      res.status(200).json(user);
     } catch (e) {
       next(e);
     }
@@ -47,7 +53,14 @@ class AuthController {
         sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      res.status(201).json({ ...user, accessToken });
+      res.cookie("access_token", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+
+      res.status(201).json(user);
     } catch (e) {
       res.status(500).json({ message: "Server error", e });
     }
@@ -65,6 +78,7 @@ class AuthController {
       await removeRefreshToken(refreshToken);
 
       res.clearCookie("refresh_token");
+      res.clearCookie("access_token");
 
       res.status(200).json({ message: "User logged out" });
     } catch (e) {
@@ -82,8 +96,14 @@ class AuthController {
         return next(CustomError.BadRequest("Refresh token not provided"));
 
       const { accessToken } = await updateAccessToken(refreshToken);
+      res.cookie("access_token", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
 
-      res.status(200).json({ accessToken });
+      res.status(200).json({ message: "Access token refreshed" });
     } catch (e) {
       res.status(500).json({ message: "Server error" });
     }

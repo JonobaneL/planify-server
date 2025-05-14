@@ -1,6 +1,6 @@
 import { User } from "../types/user";
 import jwt from "jsonwebtoken";
-import config from "../config/config";
+import config from "../config";
 import { compare, hash } from "bcrypt";
 import prisma from "../config/database";
 import { CustomError } from "../utils/customError";
