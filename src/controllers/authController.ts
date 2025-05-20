@@ -38,11 +38,16 @@ class AuthController {
       });
       res.status(200).json(user);
     } catch (e) {
+      console.log(e);
       next(e);
     }
   };
 
-  signup: RequestHandler = async (req: Request, res: Response) => {
+  signup: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const { user, accessToken, refreshToken } = await authService.signup(
         req.body
@@ -62,7 +67,7 @@ class AuthController {
 
       res.status(201).json(user);
     } catch (e) {
-      res.status(500).json({ message: "Server error", e });
+      next(e);
     }
   };
   logout: RequestHandler = async (
@@ -93,7 +98,7 @@ class AuthController {
     try {
       const refreshToken = req.cookies.refresh_token;
       if (!refreshToken)
-        return next(CustomError.BadRequest("Refresh token not provided"));
+        return next(CustomError.Unauthorized("Refresh token not provided"));
 
       const { accessToken } = await updateAccessToken(refreshToken);
       res.cookie("access_token", accessToken, {
@@ -103,7 +108,7 @@ class AuthController {
         maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
-      res.status(200).json({ message: "Access token refreshed" });
+      res.status(200).json({ message: "Access token refreshed", accessToken });
     } catch (e) {
       res.status(500).json({ message: "Server error" });
     }

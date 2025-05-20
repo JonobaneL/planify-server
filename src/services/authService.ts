@@ -28,12 +28,12 @@ class AuthService {
     });
 
     if (!user) {
-      throw CustomError.BadRequest("User with this email doesn't exist");
+      throw CustomError.Unauthorized("Invalid email or password");
     }
     const isPasswordValid = await compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw CustomError.BadRequest("Invalid password");
+      throw CustomError.Unauthorized("Invalid email or password");
     }
     const { password: _, ...payload } = user;
     const tokens = generateTokens(payload);
@@ -46,6 +46,14 @@ class AuthService {
   async signup(user: UserProps) {
     const hashedPassword = await hash(user.password, 10);
 
+    const existingUser = await prisma.user.findUnique({
+      where: { email: user.email },
+    });
+
+    if (existingUser) {
+      throw CustomError.BadRequest("User with this email already exists");
+    }
+
     const newUser = await prisma.user.create({
       data: {
         ...user,
@@ -53,6 +61,8 @@ class AuthService {
       },
       select: {
         id: true,
+        first_name: true,
+        last_name: true,
         email: true,
         username: true,
         role: true,

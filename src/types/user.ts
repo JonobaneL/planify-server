@@ -10,6 +10,6 @@ export type User = {
   team?: string;
   location?: string;
   phone?: string;
-  created_at?: Date;
-  updated_at?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
