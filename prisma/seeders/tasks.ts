@@ -190,11 +190,6 @@ export const seedTasks = async (
         },
       },
       slug: task.slug,
-      priority: {
-        create: undefined,
-        connectOrCreate: undefined,
-        connect: undefined,
-      },
       updatedBy: {
         connect: {
           id: user.id,

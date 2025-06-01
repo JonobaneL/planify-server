@@ -6,6 +6,7 @@ import { errorMiddleware } from "./middleware/errorMiddleware";
 import config from "./config";
 import testRouter from "./routes/test";
 import projectsRouter from "./routes/projects";
+import { authMiddleware } from "./middleware/authMiddleware";
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRouter);
 app.use("/test", testRouter);
-app.use("/projects", projectsRouter);
+app.use("/projects", authMiddleware, projectsRouter);
 
 app.use(errorMiddleware);
 

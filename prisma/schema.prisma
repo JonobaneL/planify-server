@@ -50,8 +50,8 @@ model RefreshToken {
 model Project{
   id String @id @default(uuid())
   name String
-  slug String
-  description String
+  slug String?
+  description String?
   view View @default(table)
   tasks Task[] @relation("projectToTasks")
 
@@ -90,11 +90,11 @@ model Task{
   assignedUser User? @relation("assignedTasks",fields: [assignedUserId], references: [id])
   assignedUserId String? @map("assigned_user")
 
-  status Status @relation("taskStatus",fields: [statusId], references: [id])
+ status Status @relation("taskStatus", fields: [statusId], references: [id])
   statusId String
   type String
 
-  priority  Status @relation("taskPriority",fields: [statusId], references: [id])
+  priority Status? @relation("taskPriority", fields: [priorityId], references: [id])
   priorityId String?
   estimation String?
   slug String
@@ -137,7 +137,6 @@ model Status{
   color String
   orderIndex Int @map("order_index")
 
-  tasksWithPriority Task[] @relation("taskPriority")
-
-  tasksWithStatus Task[] @relation("taskStatus")
+ tasksWithPriority Task[] @relation("taskPriority")
+tasksWithStatus Task[] @relation("taskStatus")
 }

@@ -7,7 +7,7 @@ const router = Router();
 
 router.get(
   "/test-prisma",
-  authMiddleware,
+  // authMiddleware,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await prisma.user.findMany();
