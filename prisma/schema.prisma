@@ -90,9 +90,10 @@ model Task{
   assignedUser User? @relation("assignedTasks",fields: [assignedUserId], references: [id])
   assignedUserId String? @map("assigned_user")
 
- status Status @relation("taskStatus", fields: [statusId], references: [id])
+  status Status @relation("taskStatus", fields: [statusId], references: [id])
   statusId String
-  type String
+  typeId String
+  type Status @relation("taskType", fields: [typeId], references: [id])
 
   priority Status? @relation("taskPriority", fields: [priorityId], references: [id])
   priorityId String?
@@ -135,8 +136,10 @@ model Status{
   id String @id @default(uuid())
   label String
   color String
+  type String
   orderIndex Int @map("order_index")
 
  tasksWithPriority Task[] @relation("taskPriority")
-tasksWithStatus Task[] @relation("taskStatus")
+ tasksWithStatus Task[] @relation("taskStatus")
+ tasksWithType Task[] @relation("taskType")
 }
