@@ -11,6 +11,7 @@ type UserProps = {
   password: string;
 };
 class AuthService {
+  //not used
   async login(email: string, password: string) {
     const user = await prisma.user.findUnique({
       where: {
@@ -43,6 +44,7 @@ class AuthService {
       ...tokens,
     };
   }
+  //not used
   async signup(user: UserProps) {
     const hashedPassword = await hash(user.password, 10);
 
@@ -77,6 +79,33 @@ class AuthService {
       user: newUser,
       ...tokens,
     };
+  }
+  async verifyUser(email: string, password: string) {
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        username: true,
+        password: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw CustomError.Unauthorized("Invalid email or password");
+    }
+    const isPasswordValid = await compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw CustomError.Unauthorized("Invalid email or password");
+    }
+    const { password: _, ...payload } = user;
+    return payload;
   }
 }
 export default new AuthService();

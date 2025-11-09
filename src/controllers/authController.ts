@@ -8,6 +8,7 @@ import {
 } from "../services/tokenService";
 
 class AuthController {
+  //not used
   login: RequestHandler = async (
     req: Request,
     res: Response,
@@ -42,7 +43,7 @@ class AuthController {
       next(e);
     }
   };
-
+  //not used
   signup: RequestHandler = async (
     req: Request,
     res: Response,
@@ -70,6 +71,8 @@ class AuthController {
       next(e);
     }
   };
+
+  //not used
   logout: RequestHandler = async (
     req: Request,
     res: Response,
@@ -90,6 +93,8 @@ class AuthController {
       next(e);
     }
   };
+
+  //not used
   refresh: RequestHandler = async (
     req: Request,
     res: Response,
@@ -111,6 +116,20 @@ class AuthController {
       res.status(200).json({ message: "Access token refreshed", accessToken });
     } catch (e) {
       res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  verifyUser: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { email, password } = req.body;
+      const user = await authService.verifyUser(email, password);
+      res.status(200).json(user);
+    } catch (e) {
+      next(e);
     }
   };
 }
