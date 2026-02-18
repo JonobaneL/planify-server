@@ -1,11 +1,47 @@
+# Dependencies & build artifacts (never send local ones)
 node_modules
 dist
-.git
-.github
+build
+
+# Editor & IDE files
 .vscode
-coverage
-Dockerfile
-Dockerfile.*
-docker-compose*
-.env*
+.idea
+*.swp
+*.swo
+
+# Environment & secrets (critical!)
+.env
+.env.*
+
+# Logs, temp files, coverage
 *.log
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+coverage
+.nyc_output
+test-results
+jest-report
+
+# Tests & e2e (unless you run tests during build — rare in prod)
+cypress
+playwright-report
+test
+__tests__
+e2e
+
+
+# Prisma / ORM related (if you use them)
+prisma/dev.db
+prisma/migrations/*/*.sql.bak   # optional
+
+# Docker files themselves (optional but clean)
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Git & version control
+.git
+.gitignore
+.gitattributes
+.github
