@@ -22,7 +22,8 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@generated/*": ["src/generated/*"]
+      "@generated/*": ["src/generated/*"],
+      "@common/*": ["src/common/*"]
     }
   },
   "watchOptions": {

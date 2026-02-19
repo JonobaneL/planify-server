@@ -129,7 +129,6 @@ model Status{
   label String
   color String
   type String
-  orderIndex Int @map("order_index")
 
  tasksWithPriority Task[] @relation("taskPriority")
  tasksWithStatus Task[] @relation("taskStatus")
