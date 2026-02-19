@@ -6,6 +6,10 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install
 
+# Copy Prisma schema specifically to generate client early
+COPY prisma ./prisma/
+RUN npx prisma generate
+
 # Copy the rest of your app
 COPY . .
 

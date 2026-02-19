@@ -19,14 +19,16 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:build": "docker compose build --no-cache",
-    "docker:start": "docker compose up -d && docker-compose logs -f server db",
+    "docker:start": "docker compose up -d && docker compose logs -f server db",
     "docker:stop": "docker compose stop",
-    "docker:clean": "docker compose down"
+    "docker:clean": "docker compose down",
+    "seed": "docker compose exec server npx prisma db seed"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
