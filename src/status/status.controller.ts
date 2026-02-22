@@ -11,7 +11,7 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { StatusesService } from './statuses.service';
+import { StatusesService } from './status.service';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 
