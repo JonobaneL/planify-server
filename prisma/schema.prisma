@@ -5,9 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
-  moduleFormat    = "cjs"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -15,122 +15,140 @@ datasource db {
 }
 
 model User {
-  id      String   @id @default(uuid())
-  email   String   @unique
-  first_name String
-  last_name  String
-  password String
-  position String?
-  username String 
-  role String?
-  team String? //TODO: create a separate team model
-  location String?
-  phone String?
-  projects Project[]
-  comments Comment[]
+  id        String  @id @default(uuid())
+  email     String  @unique
+  username  String  @unique
+  avatarUrl String?
+  firstName String
+  lastName  String
+  password  String
+  role      String?
+  position  String?
+  location  String?
+  phone     String?
 
-  assignedTasks  Task[]  @relation("assignedTasks")   
-  tasksCreated   Task[]  @relation("tasksCreated")    
-  tasksUpdated   Task[]  @relation("tasksUpdated") 
-  attachments Attachment[]
+  createdProjects  Project[]    @relation("userProjects")
+  assignedProjects Project[]    @relation("assignedProjects")
+  assignedTasks    Task[]       @relation("assignedTasks")
+  tasksCreated     Task[]       @relation("tasksCreated")
+  tasksUpdated     Task[]       @relation("tasksUpdated")
+  comments         Comment[]
+  attachments      Attachment[]
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
 
-model Project{
-  id String @id @default(uuid())
-  name String
-  slug String?
+model Project {
+  id          String  @id @default(uuid())
+  name        String
   description String?
-  view View @default(table)
+  archived    Boolean @default(false)
+  slug        String  @unique
+
+  createdBy     User   @relation("userProjects", fields: [createdById], references: [id])
+  createdById   String @map("created_by")
+  assignedUsers User[] @relation("assignedProjects")
+
   tasks Task[] @relation("projectToTasks")
-  archived Boolean @default(false)
 
-  createdBy User @relation(fields: [createdById], references: [id]) 
-  createdById String @map("created_by")
   createdAt DateTime @default(now()) @map("created_at")
-}
-enum View {
-  table
-  board
-}
-model Comment {
-  id String @id @default(uuid())
-  content String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  parent Comment? @relation("CommentToReplies",fields: [parentId], references: [id])
-  parentId String? @map("parent_id")
-  replies    Comment[] @relation("CommentToReplies")
-  task Task? @relation("taskToComments", fields: [taskId], references: [id])
-  taskId String @map("task_id")
-
-  createdBy User @relation(fields: [createdById], references: [id])
-  createdById String @map("created_by")
+  @@index([createdById])
 }
 
-model Task{
-  id String @id @default(uuid())
-  title String
+model Task {
+  id          String  @id @default(uuid())
+  title       String
   description String?
-  
-  project Project @relation("projectToTasks",fields: [projectId], references: [id])
-  projectId String @map("project_id")
 
-  assignedUser User? @relation("assignedTasks",fields: [assignedUserId], references: [id])
+  project   Project @relation("projectToTasks", fields: [projectId], references: [id])
+  projectId String  @map("project_id")
+
+  assignedUser   User?   @relation("assignedTasks", fields: [assignedUserId], references: [id])
   assignedUserId String? @map("assigned_user")
 
-  status Status @relation("taskStatus", fields: [statusId], references: [id])
-  statusId String
-  typeId String
-  type Status @relation("taskType", fields: [typeId], references: [id])
-
-  priority Status? @relation("taskPriority", fields: [priorityId], references: [id])
+  status     Status  @relation("taskStatus", fields: [statusId], references: [id])
+  statusId   String
+  type       Status  @relation("taskType", fields: [typeId], references: [id])
+  typeId     String
+  priority   Status? @relation("taskPriority", fields: [priorityId], references: [id])
   priorityId String?
+
   estimation String?
-  slug String
-  dueDate DateTime? @map("due_date")
-  
-  comments Comment[] @relation("taskToComments")
+  dueDate    DateTime? @map("due_date")
+
+  createdBy   User   @relation("tasksCreated", fields: [createdById], references: [id])
+  createdById String @map("created_by")
+  updatedBy   User   @relation("tasksUpdated", fields: [updatedById], references: [id])
+  updatedById String @map("updated_by")
+
+  comments    Comment[]    @relation("taskToComments")
   attachments Attachment[] @relation("taskToAttachments")
 
-  relatedTo   Task?     @relation("TaskRelations", fields: [relatedToId], references: [id])
-  relatedToId String?   @map("related_to")
-  relatedTasks Task[]   @relation("TaskRelations")
-  
-  createdBy User @relation("tasksCreated",fields: [createdById], references: [id])
-  createdById String @map("created_by")
-  updatedBy User @relation("tasksUpdated",fields: [updatedById], references: [id])
-  updatedById String @map("updated_by")
+  relatedTo    Task?   @relation("taskRelations", fields: [relatedToId], references: [id])
+  relatedToId  String? @map("related_to")
+  relatedTasks Task[]  @relation("taskRelations")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@index([projectId])
+  @@index([statusId])
+  @@index([assignedUserId])
+  @@index([createdById])
+  @@index([dueDate])
 }
 
-model Attachment{
-  id String @id @default(uuid())
+model Comment {
+  id      String @id @default(uuid())
+  content String
+
+  parentId String?   @map("parent_id")
+  replies  Comment[] @relation("CommentToReplies")
+  parent   Comment?  @relation("CommentToReplies", fields: [parentId], references: [id])
+
+  task   Task   @relation("taskToComments", fields: [taskId], references: [id])
+  taskId String @map("task_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String @map("created_by")
+
+  @@index([taskId])
+  @@index([createdById])
+  @@index([parentId])
+}
+
+model Attachment {
+  id   String @id @default(uuid())
   name String
-  url String
+  url  String
   type String
   size Int
 
-  task Task @relation("taskToAttachments",fields: [taskId], references: [id])
+  task   Task   @relation("taskToAttachments", fields: [taskId], references: [id])
   taskId String @map("task_id")
 
-  createdBy User @relation(fields: [createdById], references: [id])
+  createdBy   User   @relation(fields: [createdById], references: [id])
   createdById String @map("created_by")
+
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([taskId])
 }
 
-model Status{
-  id String @id @default(uuid())
+model Status {
+  id    String @id @default(uuid())
   label String
   color String
-  type String
+  type  String
 
- tasksWithPriority Task[] @relation("taskPriority")
- tasksWithStatus Task[] @relation("taskStatus")
- tasksWithType Task[] @relation("taskType")
+  tasksWithPriority Task[] @relation("taskPriority")
+  tasksWithStatus   Task[] @relation("taskStatus")
+  tasksWithType     Task[] @relation("taskType")
 }

@@ -11,7 +11,7 @@ import {
 
 const MAX_STATUSES_PER_TYPE = 10;
 
-//TODO:came up with order logic
+// TODO: came up with order logic (lexorank)
 
 @Injectable()
 export class StatusesService {

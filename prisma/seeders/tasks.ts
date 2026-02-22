@@ -195,7 +195,6 @@ export const seedTasks = async (
           id: user.id,
         },
       },
-      slug: task.slug,
       updatedBy: {
         connect: {
           id: user.id,

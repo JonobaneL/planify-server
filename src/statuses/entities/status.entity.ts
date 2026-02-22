@@ -16,8 +16,4 @@ export class Status {
   @IsString()
   @IsNotEmpty()
   type: string;
-
-  // @IsNotEmpty()
-  // @IsInt()
-  // orderIndex: number;
 }
