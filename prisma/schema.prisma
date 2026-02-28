@@ -48,7 +48,7 @@ model Project {
 
   createdBy     User   @relation("userProjects", fields: [createdById], references: [id])
   createdById   String @map("created_by")
-  assignedUsers User[] @relation("assignedProjects")
+  members User[] @relation("assignedProjects")
 
   tasks Task[] @relation("projectToTasks")
 
@@ -152,3 +152,21 @@ model Status {
   tasksWithStatus   Task[] @relation("taskStatus")
   tasksWithType     Task[] @relation("taskType")
 }
+
+// TODO: Implement invitation system
+// model Invitation {
+//   id           String    @id @default(uuid())
+//   email        String
+//   project      Project   @relation(fields: [projectId], references: [id])
+//   projectId    String
+//   invitedBy    User      @relation(fields: [invitedById], references: [id])
+//   invitedById  String
+//   role         String?   @default("member")
+//   status       String    @default("pending") // pending / accepted / expired / declined
+//   token        String?   // hashed token for accept link
+//   expiresAt    DateTime?
+//   createdAt    DateTime  @default(now())
+//   updatedAt    DateTime  @updatedAt
+
+//   @@unique([email, projectId]) // prevent duplicate invites
+// }
