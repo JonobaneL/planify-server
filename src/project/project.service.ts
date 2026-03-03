@@ -3,7 +3,7 @@ import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { PrismaService } from 'src/lib/prisma/prisma.service';
 import { ProjectNotFound } from './exceptions/project.exception';
-import { Project } from '@generated/prisma/client';
+import { Prisma, Project } from '@generated/prisma/client';
 import slugify from 'slugify';
 
 @Injectable()
@@ -21,8 +21,30 @@ export class ProjectService {
     });
   }
 
-  findAll() {
-    return this.prisma.project.findMany();
+  findAll(filters: {
+    createdBy?: string;
+    members?: string;
+    archived?: boolean;
+    name?: string;
+  }) {
+    this.logger.debug('Finding projects with filters:', filters);
+    const where: Prisma.ProjectWhereInput = {};
+    if (filters.createdBy) {
+      where.createdById = filters.createdBy;
+    }
+    if (filters.members) {
+      const memberIds = filters.members.split(',').map((id) => id.trim());
+      where.members = { some: { id: { in: memberIds } } };
+    }
+    if (filters.archived !== undefined) {
+      where.archived = filters.archived;
+    }
+    if (filters.name) {
+      where.name = { contains: filters.name, mode: 'insensitive' };
+    }
+    return this.prisma.project.findMany({
+      where,
+    });
   }
 
   async findOne(id: string): Promise<Project> {
