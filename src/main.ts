@@ -9,7 +9,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const port = configService.get<number>('PORT') ?? 3000;
+  const port = configService.get<number>('PORT') ?? 5000;
 
   app.useGlobalFilters(new PrismaClientExceptionFilter());
   app.useGlobalPipes(
@@ -19,6 +19,11 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.enableCors({
+    origin:
+      configService.get<string>('FRONTEND_URL') ?? 'http://localhost:3000',
+    credentials: true,
+  });
 
   await app.listen(port);
   console.log(`Server is running on port: ${port}`);

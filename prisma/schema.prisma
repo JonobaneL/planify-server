@@ -17,7 +17,6 @@ datasource db {
 model User {
   id        String  @id @default(uuid())
   email     String  @unique
-  username  String  @unique
   avatarUrl String?
   firstName String
   lastName  String
@@ -34,9 +33,23 @@ model User {
   tasksUpdated     Task[]       @relation("tasksUpdated")
   comments         Comment[]
   attachments      Attachment[]
+  refreshTokens    RefreshToken[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+}
+model RefreshToken {
+  id        String   @id @default(uuid())
+  hashedToken String   
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])   // for cron cleanup
 }
 
 model Project {
