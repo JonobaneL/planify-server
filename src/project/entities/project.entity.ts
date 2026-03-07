@@ -29,6 +29,9 @@ export class Project {
   @IsBoolean()
   archived: boolean;
 
+  @IsBoolean()
+  favorite: boolean;
+
   @IsUUID()
   createdById: string;
   createdAt: Date;

@@ -57,6 +57,7 @@ model Project {
   name        String
   description String?
   archived    Boolean @default(false)
+  favorite    Boolean @default(false)
   slug        String  @unique
 
   createdBy     User   @relation("userProjects", fields: [createdById], references: [id])

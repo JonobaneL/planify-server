@@ -28,13 +28,19 @@ export class ProjectController {
     @Query('createdBy') createdBy?: string,
     @Query('members') members?: string,
     @Query('archived') archived?: boolean,
+    @Query('favorite') favorite?: boolean,
     @Query('name') name?: string,
+    @Query('sort') sort?: 'name' | 'createdAt' | 'updatedAt',
+    @Query('order') order?: 'asc' | 'desc',
   ) {
     return this.projectService.findAll({
       createdBy,
       members,
       archived,
+      favorite,
       name,
+      sort,
+      order,
     });
   }
 

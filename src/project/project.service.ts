@@ -25,10 +25,13 @@ export class ProjectService {
     createdBy?: string;
     members?: string;
     archived?: boolean;
+    favorite?: boolean;
     name?: string;
+    sort?: 'name' | 'createdAt' | 'updatedAt';
+    order?: 'asc' | 'desc';
   }) {
-    this.logger.debug('Finding projects with filters:', filters);
     const where: Prisma.ProjectWhereInput = {};
+    const orderBy: Prisma.ProjectOrderByWithRelationInput = {};
     if (filters.createdBy) {
       where.createdById = filters.createdBy;
     }
@@ -39,11 +42,18 @@ export class ProjectService {
     if (filters.archived !== undefined) {
       where.archived = filters.archived;
     }
+    if (filters.favorite !== undefined) {
+      where.favorite = filters.favorite;
+    }
     if (filters.name) {
       where.name = { contains: filters.name, mode: 'insensitive' };
     }
+    if (filters.sort) {
+      orderBy[filters.sort] = filters.order ?? 'asc';
+    }
     return this.prisma.project.findMany({
       where,
+      orderBy,
     });
   }
 
