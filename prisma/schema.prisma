@@ -80,13 +80,15 @@ model Task {
   project   Project @relation("projectToTasks", fields: [projectId], references: [id])
   projectId String  @map("project_id")
 
-  assignedUser   User?   @relation("assignedTasks", fields: [assignedUserId], references: [id])
-  assignedUserId String? @map("assigned_user")
+  assignee   User?   @relation("assignedTasks", fields: [assigneeId], references: [id])
+  assigneeId String? @map("assignee_id")
 
   status     Status  @relation("taskStatus", fields: [statusId], references: [id])
   statusId   String
+
   type       Status  @relation("taskType", fields: [typeId], references: [id])
   typeId     String
+
   priority   Status? @relation("taskPriority", fields: [priorityId], references: [id])
   priorityId String?
 
@@ -94,23 +96,25 @@ model Task {
   dueDate    DateTime? @map("due_date")
 
   createdBy   User   @relation("tasksCreated", fields: [createdById], references: [id])
-  createdById String @map("created_by")
+  createdById String @map("created_by_id")
+
   updatedBy   User   @relation("tasksUpdated", fields: [updatedById], references: [id])
-  updatedById String @map("updated_by")
+  updatedById String @map("updated_by_id")
 
   comments    Comment[]    @relation("taskToComments")
   attachments Attachment[] @relation("taskToAttachments")
 
   relatedTo    Task?   @relation("taskRelations", fields: [relatedToId], references: [id])
   relatedToId  String? @map("related_to")
+
   relatedTasks Task[]  @relation("taskRelations")
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([projectId])
   @@index([statusId])
-  @@index([assignedUserId])
+  @@index([assigneeId])
   @@index([createdById])
   @@index([dueDate])
 }
@@ -120,8 +124,8 @@ model Comment {
   content String
 
   parentId String?   @map("parent_id")
-  replies  Comment[] @relation("CommentToReplies")
-  parent   Comment?  @relation("CommentToReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("commentToReplies")
+  parent   Comment?  @relation("commentToReplies", fields: [parentId], references: [id])
 
   task   Task   @relation("taskToComments", fields: [taskId], references: [id])
   taskId String @map("task_id")

@@ -5,6 +5,7 @@ import { PrismaService } from './lib/prisma/prisma.service';
 import { StatusesModule } from './status/status.module';
 import { ProjectModule } from './project/project.module';
 import { AuthModule } from './auth/auth.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
     StatusesModule,
     ProjectModule,
     AuthModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [PrismaService],

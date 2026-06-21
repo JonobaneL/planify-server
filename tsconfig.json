@@ -13,18 +13,19 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@generated/*": ["src/generated/*"],
-      "@common/*": ["src/common/*"]
-    }
+      "@generated/*": ["./src/generated/*"],
+      "@common/*": ["./src/common/*"],
+      "src/*": ["./src/*"]
+    },
+    "types": ["jest"]
   },
   "watchOptions": {
     "fallbackPolling": "dynamicPriority",

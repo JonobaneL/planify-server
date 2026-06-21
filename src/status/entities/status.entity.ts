@@ -1,19 +1,24 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class Status {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  id: string;
+  id!: string;
 
+  @ApiProperty({ example: 'Critical' })
   @IsString()
   @IsNotEmpty()
-  label: string;
+  label!: string;
 
+  @ApiProperty({ example: '#ffffff' })
   @IsString()
   @IsNotEmpty()
-  color: string;
+  color!: string;
 
+  @ApiProperty({ example: 'priority' })
   @IsString()
   @IsNotEmpty()
-  type: string;
+  type!: string;
 }

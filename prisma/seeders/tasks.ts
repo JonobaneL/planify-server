@@ -180,7 +180,7 @@ export const seedTasks = async (
       description: task.description,
       type: { connect: { id: type.id } },
       status: { connect: { id: status.id } },
-      assignedUser: {
+      assignee: {
         connect: {
           id: user.id,
         },
