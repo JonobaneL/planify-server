@@ -16,8 +16,6 @@ interface ErrorResponse {
   statusCode?: number;
 }
 
-//TODO: update this filter
-
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
@@ -47,19 +45,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       };
     }
     // 2. Validation / Pipe errors
-    else if (
-      originalResponse &&
-      typeof originalResponse === 'object' &&
-      Array.isArray((originalResponse as ErrorResponse).message)
-    ) {
-      const rawMessage = (originalResponse as ErrorResponse).message!;
+    else if (this.isValidationError(originalResponse)) {
       errorBody = {
         code: 'VALIDATION_ERROR',
         message: 'Validation failed',
-        details:
-          typeof rawMessage === 'string'
-            ? rawMessage
-            : this.formatValidationErrors(rawMessage),
+        details: this.formatValidationDetails(originalResponse),
         timestamp: new Date().toISOString(),
         path: request.url,
       };
@@ -78,6 +68,78 @@ export class HttpExceptionFilter implements ExceptionFilter {
     response.status(status).json(errorBody);
   }
 
+  private isValidationError(resp: any): boolean {
+    if (!resp || typeof resp !== 'object') return false;
+    return resp.error === 'Bad Request' || Array.isArray(resp.message);
+  }
+
+  private formatValidationDetails(response: any) {
+    const message = response.message;
+
+    if (!Array.isArray(message)) {
+      return { message };
+    }
+
+    // Check if it's array of ValidationError objects or flat strings
+    if (
+      message.length > 0 &&
+      typeof message[0] === 'object' &&
+      message[0] !== null
+    ) {
+      return this.formatValidationErrors(message as ValidationError[]);
+    } else {
+      // Flat string array
+      return this.groupFlatValidationMessages(message as string[]);
+    }
+  }
+
+  // Groups flat string messages by trying to infer field names (heuristic)
+  private groupFlatValidationMessages(messages: string[]) {
+    const fields: Record<string, string[]> = {};
+    const general: string[] = [];
+
+    messages.forEach((msg) => {
+      // Try to extract field name from message (e.g. "color should not be empty")
+      const match = msg.match(/^(\w+)\s/);
+      const field = match ? match[1] : '';
+
+      if (field) {
+        if (!fields[field]) fields[field] = [];
+        fields[field].push(msg);
+      } else {
+        general.push(msg);
+      }
+    });
+
+    if (general.length > 0) {
+      fields['general'] = general;
+    }
+
+    return {
+      fields,
+      count: messages.length,
+    };
+  }
+
+  private formatValidationErrors(errors: ValidationError[]) {
+    const fields: Record<string, string[]> = {};
+
+    errors.forEach((error) => {
+      if (error.constraints) {
+        fields[error.property] = Object.values(error.constraints);
+      } else if (error.children?.length) {
+        const child = this.formatValidationErrors(error.children);
+        fields[error.property] = child.fields as any;
+      }
+    });
+
+    return {
+      fields,
+      count: Object.keys(fields).length,
+    };
+  }
+
+  // Other helpers
   private getErrorCode(response: string | object | null): string {
     if (typeof response === 'string') return 'BAD_REQUEST';
     if (!response) return 'UNKNOWN_ERROR';
@@ -100,39 +162,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   private extractDetails(response: string | object | null): any {
     if (typeof response === 'string' || !response) return undefined;
-
-    const resp = response as ErrorResponse;
-    if (Array.isArray(resp.message)) {
-      return this.formatValidationErrors(resp.message);
-    }
-    return resp.details || resp;
-  }
-
-  /** Handles both string[] (ParseUUIDPipe) and ValidationError[] */
-  private formatValidationErrors(rawErrors: string[] | ValidationError[]): {
-    fields: Record<string, string[]>;
-    count: number;
-  } {
-    const formatted: Record<string, string[]> = {};
-
-    if (typeof rawErrors[0] === 'string') {
-      // Simple errors from ParseUUIDPipe, etc.
-      formatted[''] = rawErrors as string[];
-    } else {
-      // Full ValidationError objects from class-validator
-      (rawErrors as ValidationError[]).forEach((error) => {
-        if (error.constraints) {
-          formatted[error.property] = Object.values(error.constraints);
-        } else if (error.children?.length) {
-          const childResult = this.formatValidationErrors(error.children);
-          formatted[error.property] = childResult.fields as any; // simplified
-        }
-      });
-    }
-
-    return {
-      fields: formatted,
-      count: Object.keys(formatted).length,
-    };
+    return (response as any).details || response;
   }
 }

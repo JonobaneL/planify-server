@@ -9,7 +9,7 @@ import {
   StatusNotFound,
 } from './exceptions/statuses.exception';
 
-const MAX_STATUSES_PER_TYPE = 2;
+const MAX_STATUSES_PER_TYPE = 10;
 
 // TODO: came up with order logic (lexorank)
 
@@ -70,11 +70,10 @@ export class StatusesService {
 
   async remove(id: string): Promise<Status> {
     try {
-      return this.prisma.status.delete({
+      return await this.prisma.status.delete({
         where: { id },
       });
     } catch (error) {
-      console.log(error);
       if ((error as Prisma.PrismaClientKnownRequestError)?.code === 'P2025') {
         // Prisma error code for record not found
         throw new StatusNotFound(id);

@@ -41,6 +41,23 @@ export class StatusesController {
       path: '/statuses',
     },
   })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Validation failed',
+    type: ErrorResponseDto,
+    example: {
+      code: 'VALIDATION_ERROR',
+      message: 'Validation failed',
+      details: {
+        fields: {
+          type: ['type should not be empty', 'type must be a string'],
+        },
+        count: 2,
+      },
+      timestamp: '2026-06-21T19:45:12.345Z',
+      path: '/statuses',
+    },
+  })
   create(@Body() createStatusDto: CreateStatusDto) {
     return this.statusesService.create(createStatusDto);
   }
